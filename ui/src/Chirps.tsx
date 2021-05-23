@@ -55,10 +55,11 @@ const Chirps = ({
   const classes = useStyles();
   const [newChirp, setNewChirp] = useState(undefined);
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const recordChirp = (event: React.SyntheticEvent<EventTarget>) =>
+  const recordChirp = (event: React.SyntheticEvent<EventTarget>) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     setNewChirp(event.target.value);
+  };
 
   const userNameToBadge = (userName: string) =>
     (userName[0] + userName[userName.length - 1]).toUpperCase();
