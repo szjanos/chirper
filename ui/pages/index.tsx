@@ -19,12 +19,16 @@ const useStyles = makeStyles({
 });
 
 const IndexPage = ({
-  userName,
+  // userName,
   isLoggedIn,
   chirps,
 }: {
-  userName: string;
+  // userName: string;
   isLoggedIn: boolean;
+  chirps: {
+    userName: string;
+    chirps: Array<{ chirpId: string; text: string; likes: number }>;
+  };
 }) => {
   const classes = useStyles();
 

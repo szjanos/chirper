@@ -55,6 +55,11 @@ const Chirps = ({
   const classes = useStyles();
   const [newChirp, setNewChirp] = useState(undefined);
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const recordChirp = (event: React.SyntheticEvent<EventTarget>) =>
+    setNewChirp(event.target.value);
+
   const userNameToBadge = (userName: string) =>
     (userName[0] + userName[userName.length - 1]).toUpperCase();
 
@@ -101,7 +106,7 @@ const Chirps = ({
           rowsMax={5}
           rowsMin={5}
           value={newChirp}
-          onChange={(event) => setNewChirp(event.target.value)}
+          onChange={recordChirp}
         />
       </Grid>
       <Grid item xs={12} className={classes.chirpBtn}>
