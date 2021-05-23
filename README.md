@@ -1,2 +1,4 @@
 # chirper
-Fullstack Stateful Serverless
+Fullstack.
+Stateful.
+Serverless.
