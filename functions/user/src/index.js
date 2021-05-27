@@ -51,8 +51,8 @@ function register(registrationRequest, user, ctx) {
             userName: registrationRequest.userName,
             password: hash
         }));
-        return {};
     });
+    return {};
 }
 
 function login(loginRequest, user, ctx) {
