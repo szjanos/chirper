@@ -31,7 +31,7 @@ const User = entity.lookupType(pkg + "User");
  * We can ignore the cartId parameter if we want, it's the id of the entity, which is
  * automatically associated with all events and state for this entity.
  */
-entity.setInitial(() => null);
+entity.setInitial(() => User.create());
 
 /*
  * Command handlers. The name of the command corresponds to the name of the rpc call in
@@ -43,7 +43,7 @@ entity.setCommandHandlers({
 });
 
 function register(registrationRequest, user, ctx) {
-    if (user) {
+    if (!!user.userName) {
         ctx.fail("User already exists!");
     }
     bcrypt.hash(registrationRequest.password, SALT_ROUNDS, function (err, hash) {
@@ -56,6 +56,9 @@ function register(registrationRequest, user, ctx) {
 }
 
 function login(loginRequest, user, ctx) {
+    if (!user.userName) {
+        ctx.fail("Auth error!");
+    }
     bcrypt.compare(loginRequest.password, user.password, function (err, passwordMatch) {
         if (!passwordMatch || user.userName !== loginRequest.userName) {
             ctx.fail("Auth error!");

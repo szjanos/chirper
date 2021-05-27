@@ -7,12 +7,12 @@ import "google/api/annotations.proto";
 package js.chirp.user.api;
 
 message RegistrationRequest {
-    string user_name = 1;
+    string user_name = 1 [(akkaserverless.field).entity_key = true];
     string password = 2;
 }
 
 message LoginRequest {
-    string user_name = 1;
+    string user_name = 1 [(akkaserverless.field).entity_key = true];
     string password = 2;
 }
 
