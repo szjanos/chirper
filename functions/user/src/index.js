@@ -22,6 +22,7 @@ const entity = new ValueEntity(
  */
 const pkg = "js.chirp.user.domain.";
 const User = entity.lookupType(pkg + "User");
+const Token = entity.lookupType("js.chirp.user.api.Token");
 
 
 /*
@@ -55,17 +56,23 @@ function register(registrationRequest, user, ctx) {
     return {};
 }
 
-function login(loginRequest, user, ctx) {
+async function login(loginRequest, user, ctx) {
     if (!user.userName) {
         ctx.fail("Auth error!");
     }
-    bcrypt.compare(loginRequest.password, user.password, function (err, passwordMatch) {
-        if (!passwordMatch || user.userName !== loginRequest.userName) {
-            ctx.fail("Auth error!");
-        }
-        return jwt.sign({
-            user: user.userName,
-        }, process.env.JWT_SECRET, {expiresIn: "1h"});
+    return await new Promise((resolve, reject) => {
+        bcrypt.compare(loginRequest.password, user.password, function (err, passwordMatch) {
+            if (!passwordMatch || user.userName !== loginRequest.userName) {
+                ctx.fail("Auth error!");
+                reject("Promise:Auth error!");
+            }
+            resolve(Token.create({
+                    value: jwt.sign({
+                        user: user.userName,
+                    }, process.env.JWT_SECRET, {expiresIn: "1h"})
+                })
+            );
+        });
     });
 }
 
