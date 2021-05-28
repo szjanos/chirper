@@ -56,20 +56,22 @@ function register(registrationRequest, user, ctx) {
     return {};
 }
 
-function login(loginRequest, user, ctx) {
-    if (!user.userName) {
+async function login(loginRequest, user, ctx) {
+    if (!user.userName || user.userName !== loginRequest.userName) {
         ctx.fail("Auth error!");
     }
-    bcrypt.compare(loginRequest.password, user.password, function (err, passwordMatch) {
-        if (!passwordMatch || user.userName !== loginRequest.userName) {
-            ctx.fail("Auth error!");
-        }
+
+    const passwordMatch = await bcrypt.compare(loginRequest.password, user.password);
+
+    if (passwordMatch) {
         return Token.create({
             value: jwt.sign({
                 user: user.userName,
             }, process.env.JWT_SECRET, {expiresIn: "1h"})
         });
-    });
+    } else {
+        ctx.fail("Auth error!");
+    }
 }
 
 entity.start()
