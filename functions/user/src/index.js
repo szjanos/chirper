@@ -63,7 +63,6 @@ async function login(loginRequest, user, ctx) {
     bcrypt.compare(loginRequest.password, user.password, function (err, passwordMatch) {
         if (!passwordMatch || user.userName !== loginRequest.userName) {
             ctx.fail("Auth error!");
-            reject("Promise:Auth error!");
         }
         return Token.create({
             value: jwt.sign({
