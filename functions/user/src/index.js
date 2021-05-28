@@ -56,7 +56,7 @@ function register(registrationRequest, user, ctx) {
     return {};
 }
 
-async function login(loginRequest, user, ctx) {
+function login(loginRequest, user, ctx) {
     if (!user.userName) {
         ctx.fail("Auth error!");
     }
