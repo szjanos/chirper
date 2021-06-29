@@ -1,5 +1,4 @@
 user-function.desc
 dist
 types
-protos/**/*.*
-!protos/**/*.proto
+generated

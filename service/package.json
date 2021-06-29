@@ -18,10 +18,13 @@
   },
   "scripts": {
     "compile-desc": "compile-descriptor protos/user/api.proto protos/user/domain.proto",
-    "compile-client-protos": "pbjs -r domain -t static-module -w commonjs protos/user/domain.proto -o protos/user/domain.js && pbts --no-comments -o protos/user/domain.d.ts protos/user/domain.js && pbjs -r api -t static-module -w commonjs protos/user/api.proto -o protos/user/api.js && pbts --no-comments -o protos/user/api.d.ts protos/user/api.js",
-    "build": "npm run compile-desc && npm run compile-client-protos && tsc && cp -r protos dist",
+    "compile-client-protos": "mkdirp generated/user && pbjs -r domain -t static-module -w commonjs protos/user/domain.proto -o generated/user/domain.js && pbts --no-comments -o generated/user/domain.d.ts generated/user/domain.js && pbjs -r api -t static-module -w commonjs protos/user/api.proto -o generated/user/api.js && pbts --no-comments -o generated/user/api.d.ts generated/user/api.js",
+    "build": "npm run compile-desc && npm run compile-client-protos && tsc && cp -r generated dist",
     "dev": "npm run build && node dist/index.js",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "docker:build": "docker build -f Dockerfile -t gcr.io/akkaserverless-workbench/janos-chirper-service:latest .",
+    "docker:push": "docker push gcr.io/akkaserverless-workbench/janos-chirper-service:latest",
+    "docker:publish": "npm run docker:build && npm run docker:push"
   },
   "author": "",
   "license": "ISC"

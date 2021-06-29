@@ -4,10 +4,9 @@ import {
 } from "@lightbend/akkaserverless-javascript-sdk";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import domain from "./protos/user/domain";
-import api from "./protos/user/api";
+import domain from "./generated/user/domain";
+import api from "./generated/user/api";
 
-const { User } = domain.js.chirp.user.domain;
 const { Token } = api.js.chirp.user.api;
 const { Empty } = api.google.protobuf;
 
@@ -19,28 +18,6 @@ type RegistrationRequest = api.js.chirp.user.api.RegistrationRequest & {
   type: "Register";
 };
 type Context = ValueEntity.ValueEntityCommandContext;
-
-// setup
-const userEntity: ValueEntity = new ValueEntity(
-  ["api.proto", "domain.proto"],
-  "js.chirp.user.api.UserService",
-  "user",
-  {
-    includeDirs: ["protos/user"],
-  }
-);
-
-const UserProto = userEntity.lookupType(
-  "js.chirp.user.domain.User"
-) as unknown as typeof User;
-
-const TokenProto = userEntity.lookupType(
-  "js.chirp.user.api.Token"
-) as unknown as typeof Token;
-
-const EmptyProto = userEntity.lookupType(
-  "google.protobuf.Empty"
-) as unknown as typeof Empty;
 
 const SALT_ROUNDS = 10;
 
@@ -57,7 +34,7 @@ const handleRequest = async (
     state.userName = req.userName;
     state.password = hash;
     ctx.updateState(state);
-    return EmptyProto.create();
+    return Empty.create();
   }
 
   if (req.type === "Login") {
@@ -68,7 +45,7 @@ const handleRequest = async (
     const passwordMatch = await bcrypt.compare(req.password, state.password);
 
     if (passwordMatch) {
-      return TokenProto.create({
+      return Token.create({
         value: jwt.sign(
           {
             user: state.userName,
@@ -79,15 +56,26 @@ const handleRequest = async (
       });
     }
     ctx.fail("Auth error!");
-    return EmptyProto.create();
+    return Empty.create();
   }
 
   ctx.fail("Unknown command!");
-  return EmptyProto.create();
+  return Empty.create();
 };
 
-userEntity
-  .setInitial(() => UserProto.create({}))
+// Setup
+const userEntity: ValueEntity = new ValueEntity(
+  ["api.proto", "domain.proto"],
+  "js.chirp.user.api.UserService",
+  "user",
+  {
+    includeDirs: ["protos/user"],
+  }
+)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  // We can't use the statically typed proto-js files here, because our SDK doesn't support it yet.
+  .setInitial(() => userEntity.lookupType("js.chirp.user.domain.User").create())
   .setCommandHandlers({
     Register: (req, state, ctx) =>
       handleRequest({ ...req, type: "Register" }, state, ctx),
