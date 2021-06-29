@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY protos protos/
+COPY src src/
 COPY tsconfig.json .
 COPY index.ts .
 

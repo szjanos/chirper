@@ -72,7 +72,7 @@ const authEntity: ValueEntity = new ValueEntity(
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   // We can't use the statically typed proto-js files here, because our SDK doesn't support it yet.
-  .setInitial(() => userEntity.lookupType("js.chirp.user.domain.User").create())
+  .setInitial(() => authEntity.lookupType("js.chirp.user.domain.User").create())
   .setCommandHandlers({
     Register: (req, state, ctx) =>
       handleRequest({ ...req, type: "Register" }, state, ctx),
