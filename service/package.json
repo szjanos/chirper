@@ -11,9 +11,10 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/jsonwebtoken": "^8.5.2",
+    "@types/node": "^15.12.5",
     "eslint": "7.26.0",
     "eslint-config-airbnb-typescript-prettier": "4.2.0",
-    "prettier": "2.3.0",
+    "prettier": "^2.3.2",
     "typescript": "^4.3.4"
   },
   "scripts": {
@@ -26,6 +27,6 @@
     "docker:push": "docker push gcr.io/akkaserverless-workbench/janos-chirper-service:latest",
     "docker:publish": "npm run docker:build && npm run docker:push"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Janos Szathmary",
+  "license": "MIT"
 }
