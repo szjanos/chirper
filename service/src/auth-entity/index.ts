@@ -75,9 +75,9 @@ const authEntity: ValueEntity = new ValueEntity(
   .setInitial(() => authEntity.lookupType("js.chirp.user.domain.User").create())
   .setCommandHandlers({
     Register: (req, state, ctx) =>
-      handleRequest({ ...req, type: "Register" }, state, ctx),
+      handleRequest({ ...req, type: RequestTypes.Register }, state, ctx),
     Login: (req, state, ctx) =>
-      handleRequest({ ...req, type: "Login" }, state, ctx),
+      handleRequest({ ...req, type: RequestTypes.Login }, state, ctx),
   });
 
 export default authEntity;
