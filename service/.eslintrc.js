@@ -8,7 +8,7 @@ module.exports = {
     },
     "import/extensions": [".js", ".ts", ".mjs", ".jsx", ".tsx"]
   },
-  ignorePatterns: ["lib", "decs.d.ts", "dist", "types", "protos"],
+  ignorePatterns: ["lib", "decs.d.ts", "dist", "types", "protos", "generated"],
   "rules": {
     "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["state"] }]
   }

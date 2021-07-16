@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "dependencies": {
-    "@lightbend/akkaserverless-javascript-sdk": "^0.7.0-beta.13",
+    "@lightbend/akkaserverless-javascript-sdk": "^0.31.0",
     "bcrypt": "^5.0.1",
     "jsonwebtoken": "^8.5.1"
   },
@@ -18,9 +18,10 @@
     "typescript": "^4.3.4"
   },
   "scripts": {
-    "compile-desc": "compile-descriptor protos/user/api.proto protos/user/domain.proto",
-    "compile-client-protos": "mkdirp generated/user && pbjs -r domain -t static-module -w commonjs protos/user/domain.proto -o generated/user/domain.js && pbts --no-comments -o generated/user/domain.d.ts generated/user/domain.js && pbjs -r api -t static-module -w commonjs protos/user/api.proto -o generated/user/api.js && pbts --no-comments -o generated/user/api.d.ts generated/user/api.js",
-    "build": "npm run compile-desc && npm run compile-client-protos && tsc && cp -r generated dist",
+    "compile-desc": "compile-descriptor protos/user/user_api.proto protos/user/user_domain.proto protos/core/core_api.proto protos/core/core_domain.proto",
+    "compile-user-protos": "mkdirp generated/user && pbjs -r domain -t static-module -w commonjs protos/user/user_domain.proto -o generated/user/domain.js && pbts --no-comments -o generated/user/domain.d.ts generated/user/domain.js && pbjs -r api -t static-module -w commonjs protos/user/user_api.proto -o generated/user/api.js && pbts --no-comments -o generated/user/api.d.ts generated/user/api.js",
+    "compile-core-protos": "mkdirp generated/core && pbjs -r domain -t static-module -w commonjs --no-encode --no-decode --no-verify --no-convert --no-delimited protos/core/core_domain.proto -o generated/core/domain.js && pbts --no-comments -o generated/core/domain.d.ts generated/core/domain.js && pbjs -r api -t static-module -w commonjs --no-encode --no-decode --no-verify --no-convert --no-delimited protos/core/core_api.proto -o generated/core/api.js && pbts --no-comments -o generated/core/api.d.ts generated/core/api.js",
+    "build": "npm run compile-desc && npm run compile-user-protos && npm run compile-core-protos && tsc && cp -r generated dist",
     "dev": "npm run build && node dist/index.js",
     "start": "node dist/index.js",
     "docker:build": "docker build -f Dockerfile -t gcr.io/akkaserverless-workbench/janos-chirper-service:latest .",

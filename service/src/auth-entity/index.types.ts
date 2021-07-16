@@ -4,17 +4,17 @@ import api from "../../generated/user/api";
 
 export type User = domain.js.chirp.user.domain.User;
 
-export enum RequestTypes {
+export enum CommandType {
   Login = "Login",
   Register = "Register",
 }
 
 export type LoginRequest = api.js.chirp.user.api.LoginRequest & {
-  type: RequestTypes.Login;
+  type: CommandType.Login;
 };
 
 export type RegistrationRequest = api.js.chirp.user.api.RegistrationRequest & {
-  type: RequestTypes.Register;
+  type: CommandType.Register;
 };
 
 export type Context = ValueEntity.ValueEntityCommandContext;

@@ -6,7 +6,7 @@ import {
   Context,
   LoginRequest,
   RegistrationRequest,
-  RequestTypes,
+  CommandType,
   User,
 } from "./index.types";
 
@@ -16,28 +16,32 @@ const { Empty } = api.google.protobuf;
 const SALT_ROUNDS = 10;
 const { JWT_SECRET } = process.env;
 
-const handleRequest = async (
-  req: RegistrationRequest | LoginRequest,
+const handler = async (
+  cmd: RegistrationRequest | LoginRequest,
   state: User,
   ctx: Context
 ) => {
-  switch (req.type) {
-    case RequestTypes.Register: {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  console.log("ctx.metadata", ctx.metadata);
+
+  switch (cmd.type) {
+    case CommandType.Register: {
       if (state.userName) {
         ctx.fail("User already exists!");
       }
-      const hash = await bcrypt.hash(req.password, SALT_ROUNDS);
-      state.userName = req.userName;
+      const hash = await bcrypt.hash(cmd.password, SALT_ROUNDS);
+      state.userName = cmd.userName;
       state.password = hash;
       ctx.updateState(state);
       return Empty.create();
     }
-    case RequestTypes.Login: {
-      if (!state.userName || state.userName !== req.userName) {
+    case CommandType.Login: {
+      if (!state.userName || state.userName !== cmd.userName) {
         ctx.fail("Auth error!");
       }
 
-      const passwordMatch = await bcrypt.compare(req.password, state.password);
+      const passwordMatch = await bcrypt.compare(cmd.password, state.password);
 
       if (passwordMatch) {
         return Token.create({
@@ -62,11 +66,12 @@ const handleRequest = async (
 
 // Setup
 const authEntity: ValueEntity = new ValueEntity(
-  ["api.proto", "domain.proto"],
+  ["user_api.proto", "user_domain.proto"],
   "js.chirp.user.api.UserService",
   "user",
   {
     includeDirs: ["protos/user"],
+    forwardHeaders: [],
   }
 )
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -75,9 +80,9 @@ const authEntity: ValueEntity = new ValueEntity(
   .setInitial(() => authEntity.lookupType("js.chirp.user.domain.User").create())
   .setCommandHandlers({
     Register: (req, state, ctx) =>
-      handleRequest({ ...req, type: RequestTypes.Register }, state, ctx),
+      handler({ ...req, type: CommandType.Register }, state, ctx),
     Login: (req, state, ctx) =>
-      handleRequest({ ...req, type: RequestTypes.Login }, state, ctx),
+      handler({ ...req, type: CommandType.Login }, state, ctx),
   });
 
 export default authEntity;
