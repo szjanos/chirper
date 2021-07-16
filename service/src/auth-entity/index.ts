@@ -29,7 +29,7 @@ const handler = async (
       if (state.userName) {
         ctx.fail(toJsonError("User already exists!"));
       }
-      if (cmd.password) {
+      if (!cmd.password) {
         ctx.fail(toJsonError("Password must be specified"));
       }
       const hash = await bcrypt.hash(cmd.password, SALT_ROUNDS);
