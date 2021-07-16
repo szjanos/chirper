@@ -4,6 +4,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const {
     query: { username, chirpId },
     method,
+    headers,
   } = req;
 
   switch (method) {
@@ -12,6 +13,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         `https://chirper-api.us-east1.apps.akkaserverless.dev/chirps/${username}/chirp/${chirpId}/like`,
         {
           method: "PUT",
+          headers: {
+            Authorization: headers.authorization!,
+          },
         }
       );
       await remoteRes.json();

@@ -20,10 +20,12 @@ const useStyles = makeStyles({
 
 const IndexPage = ({
   // userName,
+  accessToken,
   isLoggedIn,
   chirps,
 }: {
   // userName: string;
+  accessToken: string;
   isLoggedIn: boolean;
   chirps: {
     userName: string;
@@ -53,7 +55,11 @@ const IndexPage = ({
           )}
         </Toolbar>
       </AppBar>
-      {isLoggedIn ? <Chirps chirps={chirps} /> : <Login />}
+      {isLoggedIn ? (
+        <Chirps chirps={chirps} accessToken={accessToken} />
+      ) : (
+        <Login />
+      )}
     </>
   );
 };
@@ -80,6 +86,7 @@ IndexPage.getInitialProps = async (ctx: NextPageContext) => {
 
   return {
     userName,
+    accessToken,
     isLoggedIn,
     chirps,
   };

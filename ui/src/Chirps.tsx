@@ -46,11 +46,13 @@ const useStyles = makeStyles(({ palette, spacing }) =>
 
 const Chirps = ({
   chirps,
+  accessToken,
 }: {
   chirps: {
     userName: string;
     chirps: Array<{ chirpId: string; text: string; likes: number }>;
   };
+  accessToken: string;
 }) => {
   const classes = useStyles();
   const [newChirp, setNewChirp] = useState(undefined);
@@ -71,6 +73,7 @@ const Chirps = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ text: newChirp }),
       }
@@ -84,6 +87,9 @@ const Chirps = ({
       `${window.location.origin}/api/chirps/${chirps.userName}/chirp/${chirpId}/like`,
       {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
     await response.json();
