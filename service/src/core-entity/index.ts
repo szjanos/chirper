@@ -12,13 +12,18 @@ import {
   Liked,
   LikeRequest,
   DomainProtos,
+  Metadata,
+  JwtPayload,
 } from "./index.types";
 import loadDomainProtos from "../utils/load-domain-protos";
 import toJsonError from "../utils/to-json-error";
 
 const { Empty } = api.google.protobuf;
 
-const { JWT_SECRET } = process.env;
+const JWT_SECRET = process.env.JWT_SECRET!;
+
+const findHeader = (metadata: Metadata, name: string) =>
+  metadata.entries.find(({ key }) => key === name)?.stringValue;
 
 const commandHandler =
   (protos: DomainProtos) =>
@@ -27,22 +32,25 @@ const commandHandler =
     state: Chirps,
     ctx: Context
   ) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const authHeader = ctx.metadata.entries.find(
-      ({ key }: { key: string }) => key === "Authorization"
-    ).stringValue;
+    const authHeader = findHeader(ctx.metadata, "Authorization");
+    if (!authHeader) {
+      ctx.fail(toJsonError("Error missing Authorization header."));
+      return Empty.create();
+    }
 
-    const [, token] = authHeader.split(" ");
-    console.log("jwtToken", token);
-
-    const tokenDecoded = jwt.verify(token, JWT_SECRET!);
-    console.log("tokenDecoded", tokenDecoded);
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (tokenDecoded.user !== state.userName) {
-      ctx.fail(toJsonError("Auth error!"));
+    try {
+      const [, token] = authHeader.split(" ");
+      const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
+      if (decodedToken.user !== state.userName) {
+        ctx.fail(toJsonError("Auth error!"));
+        return Empty.create();
+      }
+    } catch (e) {
+      if (e.name === "TokenExpiredError") {
+        ctx.fail(toJsonError("Token expired, please login again."));
+      } else {
+        ctx.fail(toJsonError("Auth error!"));
+      }
       return Empty.create();
     }
 
@@ -126,14 +134,22 @@ coreEntity
   .setBehavior(() => ({
     commandHandlers: {
       Chirp: (cmd, state, ctx) =>
-        commandHandler(protos)({ ...cmd, type: CommandType.Chirp }, state, ctx),
+        commandHandler(protos)(
+          { ...cmd, type: CommandType.Chirp },
+          state,
+          ctx as Context
+        ),
       Like: (cmd, state, ctx) =>
-        commandHandler(protos)({ ...cmd, type: CommandType.Like }, state, ctx),
+        commandHandler(protos)(
+          { ...cmd, type: CommandType.Like },
+          state,
+          ctx as Context
+        ),
       GetChirps: (cmd, state, ctx) =>
         commandHandler(protos)(
           { ...cmd, type: CommandType.GetChirps },
           state,
-          ctx
+          ctx as Context
         ),
     },
     eventHandlers: {

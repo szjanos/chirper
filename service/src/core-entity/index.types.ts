@@ -1,4 +1,5 @@
 import { EventSourcedEntity } from "@lightbend/akkaserverless-javascript-sdk";
+import { JwtPayload as BasicJwtPayload } from "jsonwebtoken";
 import domain from "../../generated/core/domain";
 import api from "../../generated/core/api";
 
@@ -37,7 +38,13 @@ export type GetChirpsRequest = api.js.chirp.api.GetChirpsRequest & {
   type: CommandType.GetChirps;
 };
 
-export type Context = EventSourcedEntity.EventSourcedEntityCommandContext;
+export type Metadata = {
+  entries: Array<{ key: string; stringValue: string }>;
+};
+
+export type Context = EventSourcedEntity.EventSourcedEntityCommandContext & {
+  metadata: Metadata;
+};
 
 export type DomainProtos = {
   ChirpsProto: Chirps & {
@@ -48,3 +55,7 @@ export type DomainProtos = {
     create: (props: Liked) => Liked;
   };
 };
+
+export type JwtPayload = {
+  user: string;
+} & BasicJwtPayload;
