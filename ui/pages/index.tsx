@@ -34,6 +34,8 @@ const IndexPage = ({
 
   const logout = () => {
     document.cookie = "name=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie =
+      "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
     window.location.reload();
   };
 
@@ -58,6 +60,7 @@ const IndexPage = ({
 
 IndexPage.getInitialProps = async (ctx: NextPageContext) => {
   const userName = cookies(ctx).name || null;
+  const accessToken = cookies(ctx).access_token || null;
   const isLoggedIn = !!userName;
 
   const baseUrl = ctx.req
@@ -67,7 +70,11 @@ IndexPage.getInitialProps = async (ctx: NextPageContext) => {
   let chirps = [];
 
   if (isLoggedIn) {
-    const res = await fetch(`${baseUrl}/api/chirps/${userName}`);
+    const res = await fetch(`${baseUrl}/api/chirps/${userName}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
     chirps = await res.json();
   }
 

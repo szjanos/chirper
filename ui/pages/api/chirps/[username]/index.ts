@@ -4,12 +4,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const {
     query: { username },
     method,
+    headers,
   } = req;
 
   switch (method) {
     case "GET": {
       const remoteRes = await fetch(
-        `https://api-chirper.us-east1.apps.akkaserverless.dev/chirps/${username}`
+        `https://chirper-api.us-east1.apps.akkaserverless.dev/chirps/${username}`,
+        {
+          headers: {
+            Authorization: headers.authorization!,
+          },
+        }
       );
       const json = await remoteRes.json();
       res.status(200).json(json);
@@ -17,11 +23,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     case "POST": {
       const remoteRes = await fetch(
-        `https://api-chirper.us-east1.apps.akkaserverless.dev/chirps/${username}`,
+        `https://chirper-api.us-east1.apps.akkaserverless.dev/chirps/${username}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: headers.authorization!,
           },
           body: JSON.stringify(req.body),
         }

@@ -29,11 +29,29 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 const Login = () => {
   const classes = useStyles();
 
-  const saveName = (event: React.SyntheticEvent<EventTarget>) => {
+  const saveName = async (event: React.SyntheticEvent<EventTarget>) => {
     event.preventDefault();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    document.cookie = `name=${event.target[0].value}; path=/`;
+    const username = event.target[0].value;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore[0].value;
+    const password = event.target[2].value;
+
+    document.cookie = `name=${username}; path=/`;
+
+    const response = await fetch(
+      `${window.location.origin}/api/user/${username}/login`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      }
+    );
+    const jsonResponse = await response.json();
+    document.cookie = `access_token=${jsonResponse.accessToken}; path=/`;
     window.location.reload();
   };
 
@@ -49,15 +67,25 @@ const Login = () => {
             variant="outlined"
             margin="normal"
             fullWidth
-            id="chriper"
-            label="Chirper"
-            name="chriper"
+            id="username"
+            label="Username"
+            name="username"
+            autoComplete="username"
             autoFocus
             inputProps={{
               pattern: "[a-zA-Z]{3,8}",
               title:
                 "Username should be alphabetical characters only with min 3 max 8 length!",
             }}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            fullWidth
+            id="password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
           />
           <Button
             type="submit"
