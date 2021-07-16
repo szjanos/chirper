@@ -1,7 +1,14 @@
 {
-  "name": "nextjs-with-typescript",
-  "version": "4.0.0",
-  "private": true,
+  "name": "chirper-fronted",
+  "version": "1.0.0",
+  "description": "The chirper app's frontend service. Hosted on the Vercel platform.",
+  "author": "Janos Szathmary",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
     "@material-ui/core": "4.11.4",
     "@material-ui/icons": "4.11.2",
@@ -10,12 +17,6 @@
     "next-cookies": "2.0.3",
     "react": "17.0.2",
     "react-dom": "17.0.2"
-  },
-  "scripts": {
-    "dev": "next",
-    "build": "next build",
-    "start": "next start",
-    "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
   },
   "devDependencies": {
     "@types/next": "9.0.0",
