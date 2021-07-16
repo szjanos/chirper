@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useContext, useEffect } from "react";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -12,6 +12,9 @@ import { deepOrange, blue } from "@material-ui/core/colors";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import Button from "@material-ui/core/Button";
+import cookies from "next-cookies";
+import { chirp, like, fetchChirps } from "../api";
+import ErrorContext from "../utils/error-context";
 
 const useStyles = makeStyles(({ palette, spacing }) =>
   createStyles({
@@ -33,6 +36,9 @@ const useStyles = makeStyles(({ palette, spacing }) =>
       marginLeft: spacing(0.5),
       marginRight: spacing(0.5),
       fontSize: 16,
+      cursor: "pointer",
+      position: "relative",
+      top: 3,
     },
     newChirp: {
       resize: "none",
@@ -44,20 +50,24 @@ const useStyles = makeStyles(({ palette, spacing }) =>
   })
 );
 
-const Chirps = ({
-  chirps,
-  accessToken,
-}: {
-  chirps: {
-    userName: string;
-    chirps: Array<{ chirpId: string; text: string; likes: number }>;
-  };
-  accessToken: string;
-}) => {
-  const classes = useStyles();
-  const [newChirp, setNewChirp] = useState(undefined);
+type Chirps = {
+  userName: string;
+  chirps: Array<{ chirpId: string; text: string; likes: number }>;
+};
 
-  const recordChirp = (event: React.SyntheticEvent<EventTarget>) => {
+const Chirps = ({ chirps }: { chirps: Chirps }) => {
+  const classes = useStyles();
+  const [newChirp, setNewChirp] = useState<string | null>(null);
+  const [latestChirps, setLatestChirps] = useState<Chirps>(chirps);
+  const { setErrorMessage } = useContext(ErrorContext);
+  const [loading, setLoading] = useState<boolean>(false);
+  const accessToken = cookies({}).access_token!;
+
+  useEffect(() => {
+    setLatestChirps(chirps);
+  }, [chirps]);
+
+  const recordChirp = (event: React.SyntheticEvent) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     setNewChirp(event.target.value);
@@ -66,34 +76,51 @@ const Chirps = ({
   const userNameToBadge = (userName: string) =>
     (userName[0] + userName[userName.length - 1]).toUpperCase();
 
-  const sendNewChirp = async () => {
-    const response = await fetch(
-      `${window.location.origin}/api/chirps/${chirps.userName}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ text: newChirp }),
+  const handleChirp = async () => {
+    try {
+      setLoading(true);
+      const success = await chirp(
+        latestChirps.userName,
+        newChirp!,
+        accessToken
+      );
+      if (success) {
+        const refetchedChirps = await fetchChirps(
+          latestChirps.userName,
+          accessToken
+        );
+        setLatestChirps(refetchedChirps);
+        setNewChirp(null);
+      } else {
+        setErrorMessage(
+          "Something went wrong during saving your chirp. Please try again later!"
+        );
       }
-    );
-    await response.json();
-    window.location.reload();
+    } catch (e) {
+      setErrorMessage(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const like = async (chirpId: string) => {
-    const response = await fetch(
-      `${window.location.origin}/api/chirps/${chirps.userName}/chirp/${chirpId}/like`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+  const handleLike = async (chirpId: string) => {
+    try {
+      const success = await like(latestChirps.userName, chirpId, accessToken);
+      if (success) {
+        const refetchedChirps = await fetchChirps(
+          latestChirps.userName,
+          accessToken
+        );
+        setLatestChirps(refetchedChirps);
+        setNewChirp(null);
+      } else {
+        setErrorMessage(
+          "Something went wrong during saving your like. Please try again later!"
+        );
       }
-    );
-    await response.json();
-    window.location.reload();
+    } catch (e) {
+      setErrorMessage(e.message);
+    }
   };
 
   return (
@@ -112,7 +139,7 @@ const Chirps = ({
           rows={5}
           rowsMax={5}
           rowsMin={5}
-          value={newChirp}
+          value={newChirp || ""}
           onChange={recordChirp}
         />
       </Grid>
@@ -121,15 +148,15 @@ const Chirps = ({
           type="submit"
           variant="contained"
           color="primary"
-          disabled={!newChirp}
-          onClick={sendNewChirp}
+          disabled={!newChirp && !loading}
+          onClick={handleChirp}
         >
           Chirp
         </Button>
       </Grid>
       <Grid item xs={12}>
         <List>
-          {chirps.chirps.map(({ chirpId, text, likes }) => (
+          {latestChirps.chirps.map(({ chirpId, text, likes }) => (
             <Fragment key={chirpId}>
               <ListItem alignItems="flex-start">
                 <ListItemAvatar>
@@ -152,7 +179,7 @@ const Chirps = ({
                       {" — "}
                       <FavoriteIcon
                         className={classes.like}
-                        onClick={() => like(chirpId)}
+                        onClick={() => handleLike(chirpId)}
                       />
                       {likes}
                     </>
