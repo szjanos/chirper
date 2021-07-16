@@ -18,3 +18,9 @@ export type RegistrationRequest = api.js.chirp.user.api.RegistrationRequest & {
 };
 
 export type Context = ValueEntity.ValueEntityCommandContext;
+
+export type DomainProtos = {
+  UserProto: User & {
+    create: (props: User) => User;
+  };
+};

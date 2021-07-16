@@ -39,7 +39,7 @@ export type GetChirpsRequest = api.js.chirp.api.GetChirpsRequest & {
 
 export type Context = EventSourcedEntity.EventSourcedEntityCommandContext;
 
-export type Protos = {
+export type DomainProtos = {
   ChirpsProto: Chirps & {
     create: (props: Chirps) => Chirps;
   };

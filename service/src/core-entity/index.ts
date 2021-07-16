@@ -11,16 +11,16 @@ import {
   GetChirpsRequest,
   Liked,
   LikeRequest,
-  Protos,
+  DomainProtos,
 } from "./index.types";
-import loadProtos from "./utils";
+import loadDomainProtos from "../utils/load-domain-protos";
 
 const { Empty } = api.google.protobuf;
 
 const { JWT_SECRET } = process.env;
 
 const commandHandler =
-  (protos: Protos) =>
+  (protos: DomainProtos) =>
   async (
     cmd: ChirpRequest | LikeRequest | GetChirpsRequest,
     state: Chirps,
@@ -118,7 +118,13 @@ const coreEntity: EventSourcedEntity = new EventSourcedEntity(
 );
 
 // We can't use the statically loaded proto-js files here, because our SDK doesn't support it yet.
-const protos = loadProtos(coreEntity);
+// This is only an issue, if we want to communicate with our proxy,
+// user facing (api) protos work with the statically loaded proto-js files without an issue.
+const protos = loadDomainProtos<DomainProtos>(coreEntity, "js.chirp.domain.", [
+  "Chirps",
+  "Chirped",
+  "Liked",
+]);
 
 coreEntity
   .setInitial((userName) => protos.ChirpsProto.create({ userName, chirps: [] }))

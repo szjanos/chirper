@@ -8,7 +8,9 @@ import {
   RegistrationRequest,
   CommandType,
   User,
+  DomainProtos,
 } from "./index.types";
+import loadDomainProtos from "../utils/load-domain-protos";
 
 const { Token } = api.js.chirp.user.api;
 const { Empty } = api.google.protobuf;
@@ -21,10 +23,6 @@ const handler = async (
   state: User,
   ctx: Context
 ) => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  console.log("ctx.metadata", ctx.metadata);
-
   switch (cmd.type) {
     case CommandType.Register: {
       if (state.userName) {
@@ -73,11 +71,19 @@ const authEntity: ValueEntity = new ValueEntity(
     includeDirs: ["protos/user"],
     forwardHeaders: [],
   }
-)
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // We can't use the statically typed proto-js files here, because our SDK doesn't support it yet.
-  .setInitial(() => authEntity.lookupType("js.chirp.user.domain.User").create())
+);
+
+// We can't use the statically loaded proto-js files here, because our SDK doesn't support it yet.
+// This is only an issue, if we want to communicate with our proxy,
+// user facing (api) protos work with the statically loaded proto-js files without an issue.
+const protos = loadDomainProtos<DomainProtos>(
+  authEntity,
+  "js.chirp.user.domain.",
+  ["User"]
+);
+
+authEntity
+  .setInitial(() => protos.UserProto.create({ userName: "", password: "" }))
   .setCommandHandlers({
     Register: (req, state, ctx) =>
       handler({ ...req, type: CommandType.Register }, state, ctx),
