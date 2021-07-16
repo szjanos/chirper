@@ -11,12 +11,13 @@ import {
   DomainProtos,
 } from "./index.types";
 import loadDomainProtos from "../utils/load-domain-protos";
+import toJsonError from "../utils/to-json-error";
 
 const { Token } = api.js.chirp.user.api;
 const { Empty } = api.google.protobuf;
 
 const SALT_ROUNDS = 10;
-const { JWT_SECRET } = process.env;
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 const handler = async (
   cmd: RegistrationRequest | LoginRequest,
@@ -26,7 +27,10 @@ const handler = async (
   switch (cmd.type) {
     case CommandType.Register: {
       if (state.userName) {
-        ctx.fail("User already exists!");
+        ctx.fail(toJsonError("User already exists!"));
+      }
+      if (cmd.password) {
+        ctx.fail(toJsonError("Password must be specified"));
       }
       const hash = await bcrypt.hash(cmd.password, SALT_ROUNDS);
       state.userName = cmd.userName;
@@ -36,7 +40,7 @@ const handler = async (
     }
     case CommandType.Login: {
       if (!state.userName || state.userName !== cmd.userName) {
-        ctx.fail("Auth error!");
+        ctx.fail(toJsonError("Incorrect username or password."));
       }
 
       const passwordMatch = await bcrypt.compare(cmd.password, state.password);
@@ -47,16 +51,17 @@ const handler = async (
             {
               user: state.userName,
             },
-            JWT_SECRET!,
+            JWT_SECRET,
             { expiresIn: "1h" }
           ),
         });
       }
-      ctx.fail("Auth error!");
+
+      ctx.fail(toJsonError("Incorrect username or password."));
       return Empty.create();
     }
     default: {
-      ctx.fail("Unknown command!");
+      ctx.fail(toJsonError("Unknown command!"));
       return Empty.create();
     }
   }

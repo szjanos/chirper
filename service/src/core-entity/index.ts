@@ -14,6 +14,7 @@ import {
   DomainProtos,
 } from "./index.types";
 import loadDomainProtos from "../utils/load-domain-protos";
+import toJsonError from "../utils/to-json-error";
 
 const { Empty } = api.google.protobuf;
 
@@ -41,7 +42,7 @@ const commandHandler =
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (tokenDecoded.user !== state.userName) {
-      ctx.fail("Auth error!");
+      ctx.fail(toJsonError("Auth error!"));
       return Empty.create();
     }
 
@@ -59,16 +60,12 @@ const commandHandler =
         return Empty.create();
       }
       case CommandType.Like: {
-        // Validation:
-        // Check that the item that we're removing actually exists.
         const existing = state.chirps.find(
           ({ chirpId }) => chirpId === cmd.chirpId
         );
-        // If not, fail the command.
         if (!existing) {
-          ctx.fail("Like failed!");
+          ctx.fail(toJsonError("Unknown chirp!"));
         } else {
-          // Otherwise, emit an item removed event.
           const liked = LikedProto.create({ chirpId: cmd.chirpId });
           ctx.emit(liked);
         }
@@ -78,7 +75,6 @@ const commandHandler =
         return state;
       }
       default: {
-        ctx.fail("Unknown command!");
         return Empty.create();
       }
     }
@@ -93,14 +89,13 @@ const eventHandler = (event: Chirped | Liked, state: Chirps) => {
     case EventType.Liked: {
       state.chirps.forEach((chirp) => {
         if (chirp.chirpId === event.chirpId) {
-          // eslint-disable-next-line no-param-reassign
           chirp.likes! += 1;
         }
       });
       break;
     }
     default: {
-      return state;
+      break;
     }
   }
   return state;
