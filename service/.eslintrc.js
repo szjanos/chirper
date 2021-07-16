@@ -10,6 +10,7 @@ module.exports = {
   },
   ignorePatterns: ["lib", "decs.d.ts", "dist", "types", "protos", "generated"],
   "rules": {
-    "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["state"] }]
+    "no-param-reassign": "off",
+    "@typescript-eslint/ban-ts-comment": "off"
   }
 };
