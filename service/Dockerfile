@@ -3,7 +3,7 @@ FROM node:15.10.0-buster-slim
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY protos protos/
 COPY src src/
