@@ -2,4 +2,4 @@
 Fullstack.
 Stateful.
 Serverless.
-Test32
+Test
